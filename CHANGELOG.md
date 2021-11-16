@@ -1,3 +1,76 @@
+# [2.0.0-alpha.1](https://github.com/Automattic/newspack-plugin/compare/v1.65.0...v2.0.0-alpha.1) (2021-11-16)
+
+
+### Bug Fixes
+
+* **ads:** network code visibility ([#1253](https://github.com/Automattic/newspack-plugin/issues/1253)) ([cb4e263](https://github.com/Automattic/newspack-plugin/commit/cb4e263acf1e3fc7e51593a74a25be22c99fe5cb))
+* use greyHeader and fix toggle on null active ([#1248](https://github.com/Automattic/newspack-plugin/issues/1248)) ([03aa4f1](https://github.com/Automattic/newspack-plugin/commit/03aa4f10ed20ce0f349e0a71e2c65ba30fcf188b))
+
+
+### Features
+
+* **connections:** add MailChimp API key setting in connection screen ([#1168](https://github.com/Automattic/newspack-plugin/issues/1168)) ([2f243b2](https://github.com/Automattic/newspack-plugin/commit/2f243b2657032398e55c4f0d8b25b7eae2507cf0))
+* **google-oauth:** handle invalid token; add GA scopes ([#1227](https://github.com/Automattic/newspack-plugin/issues/1227)) ([479a6f2](https://github.com/Automattic/newspack-plugin/commit/479a6f2a2d25752a570ab2ceb050b68b1c99b903))
+* integrate fluid to ad unit size control ([#1202](https://github.com/Automattic/newspack-plugin/issues/1202)) ([d2c299e](https://github.com/Automattic/newspack-plugin/commit/d2c299eeb2c0164760ac359e853e434c08556c23))
+* **prompt settings:** add prompt new placements and size options ([#1192](https://github.com/Automattic/newspack-plugin/issues/1192)) ([aee3aa2](https://github.com/Automattic/newspack-plugin/commit/aee3aa26edb46846f4ef038881c6a58bca052985))
+* **reader-revenue:** donations mailing ([#1187](https://github.com/Automattic/newspack-plugin/issues/1187)) ([7163a4b](https://github.com/Automattic/newspack-plugin/commit/7163a4b23d66a8b0a45db3a5d93c879bf5ad89a1))
+* update ad suppression layout ([#1256](https://github.com/Automattic/newspack-plugin/issues/1256)) ([c1bb929](https://github.com/Automattic/newspack-plugin/commit/c1bb929a9f16d718be4f207fa6e0956a9edb6ca4))
+* update button-card and button-group focus/pressed style ([#1221](https://github.com/Automattic/newspack-plugin/issues/1221)) ([2940d60](https://github.com/Automattic/newspack-plugin/commit/2940d60095e7a897bb57c126cc9d25306e43582e))
+
+
+### BREAKING CHANGES
+
+* **connections:** No breaking changes for this plugin, but for the plugins using the MailChimp API
+Key option they need to use the new one from this commit instead.
+
+* refactor(connections): change MailChimp API Key option name
+
+set the MailChimp API Key option name to the one already used on the other plugins
+
+* feat: rename Mailchimp and update help text
+
+* Per Mailchimp branding, it doesn't have an uppercase "C"
+* Update "help" text to match Newsletter > Add New editor screen
+* Add option for the `Grid1 to allow 0px gutter
+* Update inline separator
+
+* feat(connections): show connections menu all the time
+
+connections menu was shown only when WPCOM connection was pre-configured, since we're adding
+Mailchimp connection now we can show this menu all the time.
+
+* refactor(connections): fix MC API key size for placeholder
+
+* fix(connections): handle bad MC API key format
+
+* fix(connections): do not remove MC API key when invalid
+
+sometimes the MC API key can be just disabled, so we don't have to delete it completely
+
+* fix(connections): change MC API key option name
+
+introduce a new name for the MC API key option name while keeping the old one for backwards
+compatibility
+* **connections:** The old MC API key option name was originally from the newspack-newsletters plugin,
+since we're introducing this new option name all plugins using the old name should change to the new
+one, and keep the old one as a fallback.
+
+* fix(connections): validate api_key in the endpoints args level
+
+* style(connections): imrpove comment readability
+
+* fix: fix missed merge with master
+
+* revert: revert removing the check for WPCOM connexion configuration
+
+* fix: hide the WPCOM connexion card if not configured
+
+* style: fix comment typo
+
+* fix(mailchimp wizard): add translation comment for placeholder
+
+Co-authored-by: Thomas Guillot <info@thomasguillot.com>
+
 # [1.65.0](https://github.com/Automattic/newspack-plugin/compare/v1.64.0...v1.65.0) (2021-11-09)
 
 
