@@ -50,12 +50,10 @@ const convertFormDataToObject = ( formData, includedFields = [] ) =>
 		return acc;
 	}, {} );
 
-( function ( readerActivation ) {
-	domReady( function () {
-		if ( ! readerActivation ) {
-			return;
-		}
+window.newspackRAS = window.newspackRAS || [];
 
+window.newspackRAS.push( function ( readerActivation ) {
+	domReady( function () {
 		const containers = [ ...document.querySelectorAll( '.newspack-reader-auth' ) ];
 		const alerts = [ ...document.querySelectorAll( '.woocommerce-message' ) ];
 		if ( ! containers.length ) {
@@ -272,7 +270,7 @@ const convertFormDataToObject = ( formData, includedFields = [] ) =>
 					emailInput.focus();
 				}
 			}
-			setFormAction( readerActivation.getAuthStrategy() || 'pwd' );
+			setFormAction( readerActivation.getAuthStrategy() || 'link' );
 			readerActivation.on( 'reader', () => {
 				if ( readerActivation.getOTPHash() ) {
 					setFormAction( 'otp' );
@@ -592,4 +590,4 @@ const convertFormDataToObject = ( formData, includedFields = [] ) =>
 			} );
 		} );
 	} );
-} )( window.newspackReaderActivation );
+} );

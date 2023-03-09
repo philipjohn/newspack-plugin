@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import { withWizard } from '../../components/src';
+import { withWizard, utils } from '../../components/src';
 import Router from '../../components/src/proxied-imports/router';
 import {
 	AdUnit,
@@ -113,13 +113,21 @@ class AdvertisingWizard extends Component {
 		} );
 
 	/**
+	 * On cancel save/update ad unit.
+	 */
+	onAdUnitCancel = () => {
+		this.fetchAdvertisingData();
+	};
+
+	/**
 	 * Delete an ad unit.
 	 *
 	 * @param {number} id Ad Unit ID.
 	 */
 	deleteAdUnit = id => {
-		// eslint-disable-next-line no-alert
-		if ( confirm( __( 'Are you sure you want to archive this ad unit?', 'newspack' ) ) ) {
+		if (
+			utils.confirmAction( __( 'Are you sure you want to archive this ad unit?', 'newspack' ) )
+		) {
 			return this.updateWithAPI( {
 				path: '/newspack/v1/wizard/billboard/ad_unit/' + id,
 				method: 'delete',
@@ -262,6 +270,7 @@ class AdvertisingWizard extends Component {
 											} )
 											.catch( () => {} )
 									}
+									onCancel={ this.onAdUnitCancel }
 									tabbedNavigation={ tabs }
 								/>
 							) }
@@ -282,6 +291,7 @@ class AdvertisingWizard extends Component {
 												routeProps.history.push( '/google_ad_manager' );
 											} )
 										}
+										onCancel={ this.onAdUnitCancel }
 										tabbedNavigation={ tabs }
 									/>
 								);
