@@ -1,3 +1,10 @@
+## [5.6.1](https://github.com/Automattic/newspack-plugin/compare/v5.6.0...v5.6.1) (2024-11-07)
+
+
+### Bug Fixes
+
+* **my-account:** show Orders & Payment Methods for migrated subscribers ([#3504](https://github.com/Automattic/newspack-plugin/issues/3504)) ([0673c24](https://github.com/Automattic/newspack-plugin/commit/0673c24a07f806326b51922946308a2fd84f1d89))
+
 # [5.6.0](https://github.com/Automattic/newspack-plugin/compare/v5.5.2...v5.6.0) (2024-10-28)
 
 
