@@ -1,3 +1,10 @@
+## [5.8.1](https://github.com/Automattic/newspack-plugin/compare/v5.8.0...v5.8.1) (2024-11-26)
+
+
+### Bug Fixes
+
+* cast values for transaction fee options ([#3580](https://github.com/Automattic/newspack-plugin/issues/3580)) ([82a513f](https://github.com/Automattic/newspack-plugin/commit/82a513fd28d5db9a09de871527bc191923e20957))
+
 # [5.8.0](https://github.com/Automattic/newspack-plugin/compare/v5.7.0...v5.8.0) (2024-11-25)
 
 
