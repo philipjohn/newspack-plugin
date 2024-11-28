@@ -187,6 +187,10 @@ final class Newspack {
 		// Filter by authors in the Posts page.
 		include_once NEWSPACK_ABSPATH . 'includes/author-filter/class-author-filter.php';
 
+		// Load the general Newspack UI front-end styles.
+		include_once NEWSPACK_ABSPATH . 'includes/class-newspack-ui.php';
+		include_once NEWSPACK_ABSPATH . 'includes/class-newspack-ui-icons.php';
+
 		\Newspack\CLI\Initializer::init();
 	}
 
