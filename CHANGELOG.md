@@ -1,3 +1,10 @@
+## [5.9.1](https://github.com/Automattic/newspack-plugin/compare/v5.9.0...v5.9.1) (2024-12-11)
+
+
+### Bug Fixes
+
+* couple bug fixes for esp sync cli ([#3615](https://github.com/Automattic/newspack-plugin/issues/3615)) ([4557dda](https://github.com/Automattic/newspack-plugin/commit/4557ddab9b422c4d2293b6fea29fe7d3cbbfcb6d))
+
 # [5.9.0](https://github.com/Automattic/newspack-plugin/compare/v5.8.2...v5.9.0) (2024-12-09)
 
 
