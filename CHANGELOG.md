@@ -1,3 +1,10 @@
+## [5.10.2](https://github.com/Automattic/newspack-plugin/compare/v5.10.1...v5.10.2) (2024-12-17)
+
+
+### Bug Fixes
+
+* **recaptcha:** various optimizations ([#3631](https://github.com/Automattic/newspack-plugin/issues/3631)) ([5d816bc](https://github.com/Automattic/newspack-plugin/commit/5d816bcc94f49538399bd44572f6d78e739806da)), closes [#3627](https://github.com/Automattic/newspack-plugin/issues/3627)
+
 ## [5.10.1](https://github.com/Automattic/newspack-plugin/compare/v5.10.0...v5.10.1) (2024-12-16)
 
 
