@@ -1,3 +1,10 @@
+## [5.10.6](https://github.com/Automattic/newspack-plugin/compare/v5.10.5...v5.10.6) (2025-01-09)
+
+
+### Bug Fixes
+
+* **esp-sync:** get inactive subscriptions with failed or pending orders ([#3658](https://github.com/Automattic/newspack-plugin/issues/3658)) ([cca29d3](https://github.com/Automattic/newspack-plugin/commit/cca29d31d4b489a0c23fcb1dfbc50ae10e4bdc85))
+
 ## [5.10.5](https://github.com/Automattic/newspack-plugin/compare/v5.10.4...v5.10.5) (2025-01-07)
 
 
