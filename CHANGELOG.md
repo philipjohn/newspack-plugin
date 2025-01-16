@@ -1,3 +1,10 @@
+## [5.11.2](https://github.com/Automattic/newspack-plugin/compare/v5.11.1...v5.11.2) (2025-01-16)
+
+
+### Bug Fixes
+
+* **mc:** handle standard MC merge fields when fixing duplicates ([#3637](https://github.com/Automattic/newspack-plugin/issues/3637)) ([80248a2](https://github.com/Automattic/newspack-plugin/commit/80248a235c6aa295bc38fe77e0ab489ac39ed46c))
+
 ## [5.11.1](https://github.com/Automattic/newspack-plugin/compare/v5.11.0...v5.11.1) (2025-01-14)
 
 
