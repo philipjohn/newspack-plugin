@@ -1,3 +1,10 @@
+## [5.11.3](https://github.com/Automattic/newspack-plugin/compare/v5.11.2...v5.11.3) (2025-01-17)
+
+
+### Bug Fixes
+
+* **esp-sync:** sync non-donation subscription data even if no completed orders ([#3680](https://github.com/Automattic/newspack-plugin/issues/3680)) ([dd0898f](https://github.com/Automattic/newspack-plugin/commit/dd0898fe92c851631687f78a24c42b4b74d2f0b1))
+
 ## [5.11.2](https://github.com/Automattic/newspack-plugin/compare/v5.11.1...v5.11.2) (2025-01-16)
 
 
