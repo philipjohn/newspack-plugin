@@ -1,3 +1,10 @@
+## [5.12.3](https://github.com/Automattic/newspack-plugin/compare/v5.12.2...v5.12.3) (2025-01-23)
+
+
+### Bug Fixes
+
+* **reader-data:** reduce number of sync requests ([c23c580](https://github.com/Automattic/newspack-plugin/commit/c23c5805a72557b7e684b1bc50939603239733b8))
+
 ## [5.12.2](https://github.com/Automattic/newspack-plugin/compare/v5.12.1...v5.12.2) (2025-01-23)
 
 
