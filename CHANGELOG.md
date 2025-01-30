@@ -1,3 +1,10 @@
+## [5.12.5](https://github.com/Automattic/newspack-plugin/compare/v5.12.4...v5.12.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* **reader-revenue:** collect transaction fee settings ([#3697](https://github.com/Automattic/newspack-plugin/issues/3697)) ([28ff2cd](https://github.com/Automattic/newspack-plugin/commit/28ff2cdcdee78684de23d5cbf1fda12d471f721b))
+
 ## [5.12.4](https://github.com/Automattic/newspack-plugin/compare/v5.12.3...v5.12.4) (2025-01-28)
 
 
