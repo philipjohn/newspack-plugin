@@ -1,0 +1,238 @@
+/**
+ * WordPress dependencies.
+ */
+import { useState, useEffect } from '@wordpress/element';
+import { select } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
+import { Button, Modal, PanelBody, TextareaControl, SelectControl } from '@wordpress/components';
+import { registerPlugin } from '@wordpress/plugins';
+import { PluginDocumentSettingPanel } from '@wordpress/editor';
+import { Icon, trash, create } from '@wordpress/icons';
+
+/**
+ * Internal dependencies.
+ */
+import './style.scss';
+
+/**
+ * Correction types.
+ *
+ * @type {Object[]} The correction types.
+ */
+const types = [
+	{ label: __( 'Correction', 'newspack-plugin' ), value: 'correction' },
+	{ label: __( 'Clarification', 'newspack-plugin' ), value: 'clarification' },
+];
+
+/**
+ * Save the corrections data.
+ *
+ * @param {number} postId  The post ID.
+ * @param {Object} payload The corrections data.
+ *
+ * @return {Promise} The fetch promise.
+ */
+const saveData = async ( postId, payload ) => {
+	try {
+		const response = await fetch( `${window.NewspackCorrectionsData.restUrl}/${postId}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-WP-Nonce': window.NewspackCorrectionsData.nonce,
+			},
+			body: JSON.stringify( payload ),
+		} );
+		return await response.json();
+	} catch ( error ) {
+		throw new Error( error );
+	}
+};
+
+/**
+ * The corrections modal component.
+ *
+ * @return {JSX.Element} The corrections modal component.
+ */
+const CorrectionsModal = () => {
+	/**
+	 * Get the current post ID.
+	 */
+	const postId = select('core/editor').getCurrentPostId();
+
+	/**
+	 * Define the state variables.
+	 */
+	const [ isOpen, setIsOpen ] = useState( false );
+	const [ corrections, setCorrections ] = useState( [] );
+	const [ newCorrection, setNewCorrection ] = useState( '' );
+	const [ newCorrectionType, setNewCorrectionType ] = useState( 'correction' );
+
+	// Fetch corrections when modal opens
+	useEffect( () => {
+		if ( window.NewspackCorrectionsData.corrections ) {
+			setCorrections(
+				window.NewspackCorrectionsData.corrections.map(( correction ) => ({
+					...correction,
+					type: correction.correction_type || 'correction',
+				}))
+			);
+		}
+	}, [] );
+
+	// Add a new correction to the list.
+	const saveCorrection = () => {
+		setCorrections(
+			[
+				...corrections,
+				{
+					ID: Date.now(),
+					post_content: newCorrection,
+					type: newCorrectionType,
+					isNew: true
+				}
+			]
+		);
+		setNewCorrection( '' );
+		setNewCorrectionType( 'correction' );
+	};
+
+	// Update an existing correction.
+	const updateCorrection = ( correctionId, postContent, type ) => {
+		setCorrections( corrections.map( ( correction ) => {
+			if ( correction.ID === correctionId ) {
+				return { ...correction, post_content: postContent, type };
+			}
+			return correction;
+		} ) );
+	};
+
+	// Delete a correction.
+	const deleteCorrection = ( correctionId ) => {
+		setCorrections( corrections.filter( ( correction ) => correction.ID !== correctionId ) );
+	};
+
+	// Save all corrections.
+	const saveCorrections = () => {
+		const payload = {
+			post_id: postId,
+			corrections: corrections.map( ( { ID, post_content, type, isNew } ) => ({
+				id: isNew ? null : ID, // Null means create a new correction
+				content: post_content,
+				type,
+			} ) ),
+		};
+
+		// Makes a POST request to the server to save the corrections.
+		saveData( postId, payload );
+	};
+
+	return (
+		<>
+			<PluginDocumentSettingPanel
+				name="newspack-corrections-panel"
+				title= { __( 'Corrections & Clarifications', 'newspack-plugin' ) }
+				className="newspack-corrections-panel"
+			>
+				<Button isSecondary onClick={ () => setIsOpen( true ) }>
+					{ __( 'Manage Corrections', 'newspack-plugin' ) }
+				</Button>
+			</PluginDocumentSettingPanel>
+
+			{ isOpen && (
+				<Modal
+					title={ __( 'Corrections & Clarifications', 'newspack-plugin' ) }
+					onRequestClose={ () => setIsOpen( false ) }
+					className="newspack-corrections-modal"
+					size="fill"
+				>
+					{ corrections.length > 0 ? (
+						<PanelBody
+						title={ __( 'Corrections List', 'newspack-plugin' ) }
+						initialOpen={true}
+						>
+							{ corrections.map( ( correction ) => (
+									<div key={correction.ID} className="correction-item">
+										<SelectControl
+											className='correction-select-type'
+											label="Type"
+											value={correction.type}
+											options={types}
+											onChange={ ( value ) => updateCorrection( correction.ID, correction.post_content, value ) }
+										/>
+										<TextareaControl
+											className='correction-textarea'
+											label={ __( 'Description', 'newspack-plugin' ) }
+											rows={2}
+											value={correction.post_content}
+											onChange={ ( value ) => updateCorrection( correction.ID, value, correction.type ) }
+										/>
+										<Button
+											className='correction-delete'
+											variant='tertiary'
+											onClick={ () => deleteCorrection( correction.ID ) }
+											icon={ <Icon icon={ trash } height={ 24 } width={ 24 } /> }
+										/>
+									</div>
+								) )
+							}
+						</PanelBody>
+					) : null }
+
+					<PanelBody
+						title={ __( 'Add New Correction', 'newspack-plugin' ) }
+						initialOpen={false}
+					>
+						<div className="correction-item">
+							<SelectControl
+								className='correction-select-type'
+								label={ __( 'Type', 'newspack-plugin' ) }
+								value={newCorrectionType}
+								options={types}
+								onChange={ ( value ) => setNewCorrectionType( value ) }
+							/>
+							<TextareaControl
+								className='correction-textarea'
+								label={ __( 'Description', 'newspack-plugin' ) }
+								rows={3}
+								value={newCorrection}
+								onChange={ ( value ) => setNewCorrection( value ) }
+							/>
+							<Button
+								className='correction-add'
+								onClick={saveCorrection}
+								disabled={ ! newCorrection }
+								variant='primary'
+								icon={ <Icon icon={ create } height={ 24 } width={ 24 } /> }
+							/>
+						</div>
+					</PanelBody>
+
+					<Button
+						className='correction-save'
+						variant="primary"
+						onClick={ () => {
+							saveCorrections()
+							setIsOpen( false )
+						} }
+					>
+						{ __( 'Save Corrections', 'newspack-plugin' ) }
+					</Button>
+					<Button
+						className='correction-cancel'
+						variant="secondary"
+						onClick={ () => {
+							setIsOpen( false )
+						} }
+					>
+						{ __( 'Cancel', 'newspack-plugin' ) }
+					</Button>
+				</Modal>
+			) }
+		</>
+	);
+};
+
+registerPlugin( 'newspack-corrections', {
+	render: CorrectionsModal,
+	icon: null,
+} );
