@@ -263,7 +263,7 @@ class Corrections {
 			[
 				'post_title'   => sprintf( 'Correction for %s', get_the_title( $post_id ) ),
 				'post_content' => sanitize_textarea_field( $correction['content'] ),
-				'post_date'    => current_time( 'mysql' ),
+				'post_date'    => sanitize_text_field( $correction['date'] ),
 				'post_type'    => self::POST_TYPE,
 				'post_status'  => 'publish',
 				'meta_input'   => [
@@ -295,9 +295,10 @@ class Corrections {
 			]
 		);
 
-		// Attach correction type to each post.
+		// Attach correction type & date to each post.
 		foreach ( $corrections as $correction ) {
 			$correction->correction_type = get_post_meta( $correction->ID, self::CORRECTIONS_TYPE_META, true );
+			$correction->correction_date = get_post_datetime( $correction->ID )->format( 'Y-m-d H:i:s' );
 		}
 
 		return $corrections;

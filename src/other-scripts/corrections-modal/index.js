@@ -4,7 +4,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Button, Modal, PanelBody, TextareaControl, SelectControl } from '@wordpress/components';
+import { Button, Modal, PanelBody, TextareaControl, SelectControl, Popover, DateTimePicker } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { Icon, trash, create } from '@wordpress/icons';
@@ -13,6 +13,7 @@ import { Icon, trash, create } from '@wordpress/icons';
  * Internal dependencies.
  */
 import './style.scss';
+import moment from 'moment';
 
 /**
  * Correction types.
@@ -66,6 +67,7 @@ const CorrectionsModal = () => {
 	const [ corrections, setCorrections ] = useState( [] );
 	const [ newCorrection, setNewCorrection ] = useState( '' );
 	const [ newCorrectionType, setNewCorrectionType ] = useState( 'correction' );
+	const [ isDatePopoverOpen, setIsDatePopoverOpen ] = useState( null );
 
 	// Fetch corrections when modal opens
 	useEffect( () => {
@@ -74,6 +76,7 @@ const CorrectionsModal = () => {
 				window.NewspackCorrectionsData.corrections.map(( correction ) => ({
 					...correction,
 					type: correction.correction_type || 'correction',
+					date: correction.correction_date,
 				}))
 			);
 		}
@@ -83,13 +86,14 @@ const CorrectionsModal = () => {
 	const saveCorrection = () => {
 		setCorrections(
 			[
-				...corrections,
 				{
 					ID: Date.now(),
 					post_content: newCorrection,
 					type: newCorrectionType,
+					date: new Date(),
 					isNew: true
-				}
+				},
+				...corrections
 			]
 		);
 		setNewCorrection( '' );
@@ -97,10 +101,10 @@ const CorrectionsModal = () => {
 	};
 
 	// Update an existing correction.
-	const updateCorrection = ( correctionId, postContent, type ) => {
+	const updateCorrection = ( correctionId, postContent, type, date ) => {
 		setCorrections( corrections.map( ( correction ) => {
 			if ( correction.ID === correctionId ) {
-				return { ...correction, post_content: postContent, type };
+				return { ...correction, post_content: postContent, type, date };
 			}
 			return correction;
 		} ) );
@@ -115,10 +119,11 @@ const CorrectionsModal = () => {
 	const saveCorrections = () => {
 		const payload = {
 			post_id: postId,
-			corrections: corrections.map( ( { ID, post_content, type, isNew } ) => ({
+			corrections: corrections.map( ( { ID, post_content, type, date, isNew } ) => ({
 				id: isNew ? null : ID, // Null means create a new correction
 				content: post_content,
 				type,
+				date: moment( new Date( date ) ).format( 'YYYY-MM-DD HH:mm:ss' ),
 			} ) ),
 		};
 
@@ -152,19 +157,43 @@ const CorrectionsModal = () => {
 						>
 							{ corrections.map( ( correction ) => (
 									<div key={correction.ID} className="correction-item">
-										<SelectControl
-											className='correction-select-type'
-											label="Type"
-											value={correction.type}
-											options={types}
-											onChange={ ( value ) => updateCorrection( correction.ID, correction.post_content, value ) }
-										/>
+										<div>
+											<SelectControl
+												className='correction-select-type'
+												label="Type"
+												value={ correction.type }
+												options={ types }
+												onChange={ ( value ) => updateCorrection( correction.ID, correction.post_content, value, correction.date ) }
+											/>
+											<Button
+												className='correction-date-button'
+												variant='secondary'
+												onClick={ () => setIsDatePopoverOpen( correction.ID ) }
+											>
+												{ new Date( correction.date ).toLocaleString() }
+											</Button>
+											{ isDatePopoverOpen === correction.ID && (
+												<Popover
+													className="correction-date-popover"
+													position="bottom center"
+													onClose={ () => setIsDatePopoverOpen( null ) }
+												>
+													<DateTimePicker
+														label={ __( 'Date', 'newspack-plugin' ) }
+														className='correction-date'
+														is12Hour={ true }
+														currentDate={ new Date( correction.date ) }
+														onChange={ ( value ) => updateCorrection( correction.ID, correction.post_content, correction.type, value ) }
+													/>
+												</Popover>
+											) }
+										</div>
 										<TextareaControl
 											className='correction-textarea'
 											label={ __( 'Description', 'newspack-plugin' ) }
-											rows={2}
-											value={correction.post_content}
-											onChange={ ( value ) => updateCorrection( correction.ID, value, correction.type ) }
+											rows={ 3 }
+											value={ correction.post_content }
+											onChange={ ( value ) => updateCorrection( correction.ID, value, correction.type, correction.date ) }
 										/>
 										<Button
 											className='correction-delete'

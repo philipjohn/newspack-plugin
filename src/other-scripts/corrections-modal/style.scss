@@ -16,6 +16,12 @@
 		width: 100%;
 	}
 
+	&-date-popover {
+		> * {
+			padding: 10px;
+		}
+	}
+
 	&-delete,
 	&-add {
 		margin-top: auto;
