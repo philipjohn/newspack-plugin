@@ -47,10 +47,9 @@ class Corrections {
 	const SUPPORTED_POST_TYPES = [ 'article_legacy', 'content_type_blog', 'post', 'press_release' ];
 
 	/**
-	 * REST namespace and route for corrections.
+	 * REST route for corrections.
 	 */
-	const REST_NAMESPACE = 'newspack/v1';
-	const REST_ROUTE     = '/corrections';
+	const REST_ROUTE = '/corrections';
 
 	/**
 	 * Initializes the class.
@@ -101,8 +100,7 @@ class Corrections {
 			'NewspackCorrectionsData',
 			[
 				'corrections' => self::get_corrections( get_the_ID() ),
-				'restUrl'     => esc_url_raw( rest_url( self::REST_NAMESPACE . self::REST_ROUTE ) ),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'restPath'    => sprintf( '/%s%s', NEWSPACK_API_NAMESPACE, self::REST_ROUTE ),
 			]
 		);
 
@@ -186,7 +184,7 @@ class Corrections {
 	 */
 	public static function register_rest_routes() {
 		register_rest_route(
-			self::REST_NAMESPACE,
+			NEWSPACK_API_NAMESPACE,
 			self::REST_ROUTE . '/(?P<id>\d+)',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -247,7 +245,8 @@ class Corrections {
 		return rest_ensure_response(
 			[
 				'success'           => true,
-				'corrections_saved' => $processed_ids, 
+				'corrections_saved' => $processed_ids,
+				'message'           => __( 'Corrections saved successfully.', 'newspack-plugin' ),
 			]
 		);
 	}
@@ -257,6 +256,8 @@ class Corrections {
 	 *
 	 * @param int   $post_id    The post ID.
 	 * @param array $correction The corrections.
+	 *
+	 * @return int|WP_Error The correction ID.
 	 */
 	public static function add_correction( $post_id, $correction ) {
 		$id = wp_insert_post(

@@ -2,7 +2,8 @@
  * WordPress dependencies.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { select } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { Button, Modal, PanelBody, TextareaControl, SelectControl, Popover, DateTimePicker } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
@@ -31,22 +32,15 @@ const types = [
  * @param {number} postId  The post ID.
  * @param {Object} payload The corrections data.
  *
- * @return {Promise} The fetch promise.
+ * @return {Promise} The response.
  */
 const saveData = async ( postId, payload ) => {
-	try {
-		const response = await fetch( `${window.NewspackCorrectionsData.restUrl}/${postId}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.NewspackCorrectionsData.nonce,
-			},
-			body: JSON.stringify( payload ),
-		} );
-		return await response.json();
-	} catch ( error ) {
-		throw new Error( error );
-	}
+	const response = await apiFetch( {
+		path: `${window.NewspackCorrectionsData.restPath}/${postId}`,
+		method: 'POST',
+		data: payload,
+	} );
+	return response;
 };
 
 /**
@@ -58,12 +52,14 @@ const CorrectionsModal = () => {
 	/**
 	 * Get the current post ID.
 	 */
-	const postId = select('core/editor').getCurrentPostId();
+	const postId = useSelect( ( select ) => select( 'core/editor' ).getCurrentPostId(), [] );
 
 	/**
 	 * Define the state variables.
 	 */
 	const [ isOpen, setIsOpen ] = useState( false );
+	const [ isSaving, setIsSaving ] = useState(false);
+	const [ saveError, setSaveError ] = useState(null);
 	const [ corrections, setCorrections ] = useState( [] );
 	const [ newCorrection, setNewCorrection ] = useState( '' );
 	const [ newCorrectionType, setNewCorrectionType ] = useState( 'correction' );
@@ -73,17 +69,22 @@ const CorrectionsModal = () => {
 	useEffect( () => {
 		if ( window.NewspackCorrectionsData.corrections ) {
 			setCorrections(
-				window.NewspackCorrectionsData.corrections.map(( correction ) => ({
+				window.NewspackCorrectionsData.corrections.map( ( correction ) => ( {
 					...correction,
 					type: correction.correction_type || 'correction',
 					date: correction.correction_date,
-				}))
+				} ) )
 			);
 		}
 	}, [] );
 
 	// Add a new correction to the list.
 	const saveCorrection = () => {
+		// Check if the correction is empty.
+		if ( ! newCorrection ) {
+			return;
+		}
+
 		setCorrections(
 			[
 				{
@@ -116,7 +117,10 @@ const CorrectionsModal = () => {
 	};
 
 	// Save all corrections.
-	const saveCorrections = () => {
+	const saveCorrections = async () => {
+		setIsSaving(true);
+		setSaveError(null);
+
 		const payload = {
 			post_id: postId,
 			corrections: corrections.map( ( { ID, post_content, type, date, isNew } ) => ({
@@ -127,8 +131,14 @@ const CorrectionsModal = () => {
 			} ) ),
 		};
 
-		// Makes a POST request to the server to save the corrections.
-		saveData( postId, payload );
+		try {
+			await saveData( postId, payload );
+			setIsOpen(false);
+		} catch ( error ) {
+			setSaveError( error.message );
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	return (
@@ -236,15 +246,18 @@ const CorrectionsModal = () => {
 						</div>
 					</PanelBody>
 
+					{ saveError && <p className="error-message">{ saveError }</p> }
+
 					<Button
 						className='correction-save'
 						variant="primary"
 						onClick={ () => {
-							saveCorrections()
-							setIsOpen( false )
+							saveCorrection();
+							saveCorrections();
 						} }
+						disabled={ isSaving }
 					>
-						{ __( 'Save Corrections', 'newspack-plugin' ) }
+						{ isSaving ? __( 'Saving…', 'newspack-plugin' ) : __( 'Save Corrections', 'newspack-plugin' ) }
 					</Button>
 					<Button
 						className='correction-cancel'
