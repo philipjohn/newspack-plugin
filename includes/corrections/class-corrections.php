@@ -99,8 +99,9 @@ class Corrections {
 			'newspack-corrections-modal',
 			'NewspackCorrectionsData',
 			[
-				'corrections' => self::get_corrections( get_the_ID() ),
-				'restPath'    => sprintf( '/%s%s', NEWSPACK_API_NAMESPACE, self::REST_ROUTE ),
+				'corrections'  => self::get_corrections( get_the_ID() ),
+				'restPath'     => sprintf( '/%s%s', NEWSPACK_API_NAMESPACE, self::REST_ROUTE ),
+				'siteTimezone' => wp_timezone_string(),
 			]
 		);
 

@@ -85,13 +85,22 @@ const CorrectionsModal = () => {
 			return;
 		}
 
+		// Add date as per site's timezone.
+		const adjustedDate  = new Date().toLocaleString(
+			'en-US',
+			{
+				timeZone: window.NewspackCorrectionsData.siteTimezone,
+				hour12: false
+			}
+		);
+
 		setCorrections(
 			[
 				{
 					ID: Date.now(),
 					post_content: newCorrection,
 					type: newCorrectionType,
-					date: new Date(),
+					date: adjustedDate,
 					isNew: true
 				},
 				...corrections
