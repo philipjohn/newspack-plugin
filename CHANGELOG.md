@@ -1,3 +1,10 @@
+## [5.13.4](https://github.com/Automattic/newspack-plugin/compare/v5.13.3...v5.13.4) (2025-02-14)
+
+
+### Bug Fixes
+
+* **wcs:** account for pagination and failed scheduled retries in on-hold migration script ([#3750](https://github.com/Automattic/newspack-plugin/issues/3750)) ([171b29e](https://github.com/Automattic/newspack-plugin/commit/171b29ea6ce5caaf812f2ed93e8fbbdac58ff5d1))
+
 ## [5.13.3](https://github.com/Automattic/newspack-plugin/compare/v5.13.2...v5.13.3) (2025-02-12)
 
 
