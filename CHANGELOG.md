@@ -1,3 +1,10 @@
+## [5.14.2](https://github.com/Automattic/newspack-plugin/compare/v5.14.1...v5.14.2) (2025-02-20)
+
+
+### Bug Fixes
+
+* **esp-sync:** transform outgoing dates to site timzeone ([#3728](https://github.com/Automattic/newspack-plugin/issues/3728)) ([#3765](https://github.com/Automattic/newspack-plugin/issues/3765)) ([7867af3](https://github.com/Automattic/newspack-plugin/commit/7867af3b0e3c73b6905415700dfccc32916e8cdf))
+
 ## [5.14.1](https://github.com/Automattic/newspack-plugin/compare/v5.14.0...v5.14.1) (2025-02-18)
 
 
