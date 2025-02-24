@@ -1,3 +1,10 @@
+## [5.14.3](https://github.com/Automattic/newspack-plugin/compare/v5.14.2...v5.14.3) (2025-02-24)
+
+
+### Bug Fixes
+
+* **memberships:** ensure user membership is linked to the correct subscription ([#3768](https://github.com/Automattic/newspack-plugin/issues/3768)) ([a942616](https://github.com/Automattic/newspack-plugin/commit/a942616d4633ed48c33396b6c90ffa31a6a67bb6))
+
 ## [5.14.2](https://github.com/Automattic/newspack-plugin/compare/v5.14.1...v5.14.2) (2025-02-20)
 
 
