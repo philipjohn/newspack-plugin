@@ -48,7 +48,6 @@ class WooCommerce_Connection {
 		\add_filter( 'woocommerce_email_enabled_customer_completed_order', [ __CLASS__, 'send_customizable_receipt_email' ], 10, 3 );
 		\add_filter( 'woocommerce_email_enabled_cancelled_subscription', [ __CLASS__, 'send_customizable_cancellation_email' ], 10, 3 );
 		\add_action( 'woocommerce_order_status_completed', [ __CLASS__, 'maybe_update_reader_display_name' ], 10, 2 );
-		\add_action( 'option_woocommerce_feature_order_attribution_enabled', [ __CLASS__, 'force_disable_order_attribution' ] );
 		\add_filter( 'woocommerce_related_products', [ __CLASS__, 'disable_related_products' ] );
 		\add_action( 'cli_init', [ __CLASS__, 'register_cli_commands' ] );
 
@@ -370,24 +369,6 @@ class WooCommerce_Connection {
 	}
 
 	/**
-	 * Force option for enabling order attribution to OFF unless the
-	 * NEWSPACK_PREVENT_WC_ALLOW_ORDER_ATTRIBUTION_OVERRIDE constant is set.
-	 * Right now, it causes JavaScript errors in the modal checkout.
-	 *
-	 * See:https://woo.com/document/order-attribution-tracking/
-	 *
-	 * @param bool $should_allow Whether WooCommerce should allow enabling Order Attribution.
-	 *
-	 * @return string Option value.
-	 */
-	public static function force_disable_order_attribution( $should_allow ) {
-		if ( defined( 'NEWSPACK_PREVENT_WC_ALLOW_ORDER_ATTRIBUTION_OVERRIDE' ) && NEWSPACK_PREVENT_WC_ALLOW_ORDER_ATTRIBUTION_OVERRIDE ) {
-			return $should_allow;
-		}
-		return false;
-	}
-
-	/**
 	 * Send the customizable receipt or welcome email instead of WooCommerce's default receipt.
 	 *
 	 * @param bool     $enable Whether to send the default receipt email.
@@ -691,7 +672,11 @@ class WooCommerce_Connection {
 	 * @param string $meta_key Meta key.
 	 */
 	public static function get_post_metadata( $value, $id, $meta_key ) {
-		if ( '_wp_page_template' === $meta_key && self::should_override_template() ) {
+		if (
+			'_wp_page_template' === $meta_key &&
+			self::should_override_template() &&
+			'page' === get_post_type( $id )
+		) {
 			return 'single-wide';
 		}
 		return $value;

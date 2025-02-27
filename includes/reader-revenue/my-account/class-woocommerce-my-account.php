@@ -22,6 +22,8 @@ class WooCommerce_My_Account {
 	const DELETE_ACCOUNT_FORM          = 'delete-account-form';
 	const SEND_MAGIC_LINK_PARAM        = 'magic-link';
 	const AFTER_ACCOUNT_DELETION_PARAM = 'account-deleted';
+	const VERIFY_EMAIL_CHANGE_PARAM    = 'verify-email-change';
+	const PENDING_EMAIL_CHANGE_META    = 'newspack_pending_email_change';
 
 	/**
 	 * Initialize.
@@ -47,6 +49,9 @@ class WooCommerce_My_Account {
 			\add_action( 'template_redirect', [ __CLASS__, 'handle_magic_link_request' ] );
 			\add_action( 'template_redirect', [ __CLASS__, 'redirect_to_account_details' ] );
 			\add_action( 'template_redirect', [ __CLASS__, 'edit_account_prevent_email_update' ] );
+			\add_action( 'woocommerce_save_account_details', [ __CLASS__, 'handle_email_change_request' ] );
+			\add_action( 'template_redirect', [ __CLASS__, 'handle_verify_email_change' ] );
+			\add_filter( 'send_email_change_email', '__return_false' );
 			\add_action( 'init', [ __CLASS__, 'restrict_account_content' ], 100 );
 			\add_filter( 'woocommerce_save_account_details_required_fields', [ __CLASS__, 'remove_required_fields' ] );
 			\add_action( 'template_redirect', [ __CLASS__, 'verify_saved_account_details' ] );
@@ -633,7 +638,6 @@ class WooCommerce_My_Account {
 			empty( $_POST['account_email'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			|| ! \is_user_logged_in()
 			|| ! Reader_Activation::is_enabled()
-			|| self::is_email_change_enabled()
 		) {
 			return;
 		}
@@ -784,6 +788,100 @@ class WooCommerce_My_Account {
 		 * @param bool $enabled Whether or not to allow email changes.
 		 */
 		return \apply_filters( 'newspack_email_change_enabled', $is_enabled );
+	}
+
+	/**
+	 * Handle email change request.
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public static function handle_email_change_request( $user_id ) {
+		$new_email = filter_input( INPUT_POST, 'newspack_account_email', FILTER_SANITIZE_EMAIL );
+		if (
+			empty( $new_email )
+			|| ! \is_user_logged_in()
+			|| ! Reader_Activation::is_enabled()
+			|| ! self::is_email_change_enabled()
+		) {
+			return;
+		}
+		$old_email = \wp_get_current_user()->user_email;
+		if ( $new_email === $old_email ) {
+			return;
+		}
+		if ( ! \is_email( $new_email ) ) {
+			\wc_add_notice( __( 'Please enter a valid email address.', 'newspack-plugin' ), 'error' );
+		} elseif ( \email_exists( $new_email ) ) {
+			\wc_add_notice( __( 'This email address is already in use.', 'newspack-plugin' ), 'error' );
+		} else {
+			$update = \update_user_meta( $user_id, self::PENDING_EMAIL_CHANGE_META, $new_email );
+
+			if ( ! $update ) {
+				\wc_add_notice( __( 'Something went wrong. Please try again.', 'newspack-plugin' ), 'error' );
+			} else {
+				$sent = Emails::send_email(
+					Reader_Activation_Emails::EMAIL_TYPES['CHANGE_EMAIL'],
+					$new_email,
+					[
+						[
+							'template' => '*EMAIL_VERIFICATION_URL*',
+							'value'    => \add_query_arg(
+								[
+									self::VERIFY_EMAIL_CHANGE_PARAM => \wp_create_nonce( self::VERIFY_EMAIL_CHANGE_PARAM ),
+								],
+								\home_url()
+							),
+						],
+					]
+				);
+				if ( ! $sent ) {
+					\wc_add_notice( __( 'Something went wrong. Please contact the site administrator.', 'newspack-plugin' ), 'error' );
+				} else {
+					\wc_add_notice(
+						sprintf(
+							// Translators: %s is the new email address.
+							__( 'A verification email has been sent to %s. Please verify to complete the change.', 'newspack-plugin' ),
+							$new_email
+						)
+					);
+				}
+			}
+		}
+		// Redirect and exit ahead of Woo so only our notice is displayed.
+		\wp_safe_redirect( \wc_get_endpoint_url( 'edit-account', '', \wc_get_page_permalink( 'myaccount' ) ) );
+		exit;
+	}
+
+	/**
+	 * Handle email change verification.
+	 */
+	public static function handle_verify_email_change() {
+		if ( ! self::is_email_change_enabled() || ! \is_user_logged_in() ) {
+			return;
+		}
+		$nonce = filter_input( INPUT_GET, self::VERIFY_EMAIL_CHANGE_PARAM, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		if ( ! $nonce ) {
+			return;
+		}
+		if ( \wp_verify_nonce( $nonce, self::VERIFY_EMAIL_CHANGE_PARAM ) ) {
+			$new_email = \get_user_meta( \get_current_user_id(), self::PENDING_EMAIL_CHANGE_META, true );
+			if ( ! $new_email ) {
+				\wc_add_notice( __( 'Something went wrong.', 'newspack-plugin' ), 'error' );
+			} else {
+				\delete_user_meta( \get_current_user_id(), self::PENDING_EMAIL_CHANGE_META );
+				\wp_update_user(
+					[
+						'ID'         => \get_current_user_id(),
+						'user_email' => $new_email,
+					]
+				);
+				\wc_add_notice( __( 'Your email address has been successfully updated.', 'newspack-plugin' ) );
+			}
+		} else {
+			\wc_add_notice( __( 'Something went wrong.', 'newspack-plugin' ), 'error' );
+		}
+		\wp_safe_redirect( \wc_get_endpoint_url( 'edit-account', '', \wc_get_page_permalink( 'myaccount' ) ) );
+		exit;
 	}
 }
 
