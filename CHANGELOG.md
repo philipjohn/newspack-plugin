@@ -1,3 +1,10 @@
+## [6.0.5](https://github.com/Automattic/newspack-plugin/compare/v6.0.4...v6.0.5) (2025-03-18)
+
+
+### Bug Fixes
+
+* dont sync info about failder orders ([#3842](https://github.com/Automattic/newspack-plugin/issues/3842)) ([1cb927b](https://github.com/Automattic/newspack-plugin/commit/1cb927b664a848e5aca8e31cf1be0c67fd1ede38))
+
 ## [6.0.4](https://github.com/Automattic/newspack-plugin/compare/v6.0.3...v6.0.4) (2025-03-12)
 
 
