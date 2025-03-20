@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/Automattic/newspack-plugin/compare/v6.1.0...v6.1.1) (2025-03-20)
+
+
+### Bug Fixes
+
+* **woocommerce:** my-account redirect when resubscribing ([#3822](https://github.com/Automattic/newspack-plugin/issues/3822)) ([1b24e9c](https://github.com/Automattic/newspack-plugin/commit/1b24e9cb7f3ccf0fc603ef319ff379b232f43970))
+
 # [6.1.0](https://github.com/Automattic/newspack-plugin/compare/v6.0.5...v6.1.0) (2025-03-18)
 
 
