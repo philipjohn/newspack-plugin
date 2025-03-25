@@ -1,3 +1,10 @@
+## [6.1.3](https://github.com/Automattic/newspack-plugin/compare/v6.1.2...v6.1.3) (2025-03-25)
+
+
+### Bug Fixes
+
+* **esp-sync:** account for wp errors in email change sync ([#3860](https://github.com/Automattic/newspack-plugin/issues/3860)) ([d5d576d](https://github.com/Automattic/newspack-plugin/commit/d5d576d207ead6f520efce6925566e2260ebbf65))
+
 ## [6.1.2](https://github.com/Automattic/newspack-plugin/compare/v6.1.1...v6.1.2) (2025-03-25)
 
 
