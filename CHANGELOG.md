@@ -1,3 +1,11 @@
+## [6.1.2](https://github.com/Automattic/newspack-plugin/compare/v6.1.1...v6.1.2) (2025-03-25)
+
+
+### Bug Fixes
+
+* **reader-revenue:** fatal when using woocommerce-paypal-payments@3.0.0 ([#3848](https://github.com/Automattic/newspack-plugin/issues/3848)) ([a3f6d6a](https://github.com/Automattic/newspack-plugin/commit/a3f6d6ac4ea2f277e888691b52e3c2dae865e52a))
+* **woocommerce-email:** fix the subscription cancellation email ([fc1cc8c](https://github.com/Automattic/newspack-plugin/commit/fc1cc8cb2948512d1e6b279696595da784ade0bf))
+
 ## [6.1.1](https://github.com/Automattic/newspack-plugin/compare/v6.1.0...v6.1.1) (2025-03-20)
 
 
