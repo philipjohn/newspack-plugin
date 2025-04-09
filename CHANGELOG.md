@@ -1,3 +1,10 @@
+## [6.3.1](https://github.com/Automattic/newspack-plugin/compare/v6.3.0...v6.3.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* update Lite Site URL base ([#3900](https://github.com/Automattic/newspack-plugin/issues/3900)) ([9b5d708](https://github.com/Automattic/newspack-plugin/commit/9b5d70865985e5df9c945abe0ab16b73f65f94a8))
+
 # [6.3.0](https://github.com/Automattic/newspack-plugin/compare/v6.2.2...v6.3.0) (2025-04-09)
 
 
