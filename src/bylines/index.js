@@ -4,6 +4,13 @@
  * WordPress dependencies
  */
 import { Button, Modal, ToggleControl } from '@wordpress/components';
+import {
+	useCallback,
+	useMemo,
+	useEffect,
+	useState,
+	useRef,
+} from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 import { __ } from '@wordpress/i18n';
@@ -11,11 +18,6 @@ import { registerPlugin } from '@wordpress/plugins';
 import apiFetch from '@wordpress/api-fetch';
 import { Icon, plus } from '@wordpress/icons';
 import { store as coreStore } from '@wordpress/core-data';
-
-/**
- * External dependencies
- */
-import { useCallback, useEffect, useState, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -108,23 +110,22 @@ const transformByline = element => {
 /**
  * Component for the custom byline modal.
  *
- * @param {Object}   props                  Component props.
- * @param {Function} props.insertToken      Callback when a token is added to the byline.
- * @param {Function} props.onMount          Callback when the modal is mounted.
- * @param {Object[]} props.tokens           All author values to be inserted.
- * @param {number[]} props.tokensInUse      Array of author IDs already inserted in byline.
- * @param {Function} props.updateCursorPos  Callback when focus leaves the editable text area.
- * @param {Function} props.updateBylineMeta Callback for updating the byline meta on input.
+ * @param {Object}   props             Component props.
+ * @param {Function} props.insertToken Callback when a token is added to the byline.
+ * @param {Object[]} props.tokens      All author values to be inserted.
+ * @param {number[]} props.tokensInUse Array of author IDs already inserted in byline.
+ * @param {Element}  props.textArea    The text area element.
+ * @param {boolean}  props.isOpen      Whether the modal is open.
+ * @param {Function} props.setOpen     Callback to set the modal open state.
  */
 const CustomBylineModal = ( {
 	insertToken,
-	onMount,
 	tokens,
 	tokensInUse,
-	updateCursorPos,
-	updateBylineMeta,
+	textArea,
+	isOpen,
+	setOpen,
 } ) => {
-	const [ isOpen, setOpen ] = useState( false );
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
 
@@ -144,15 +145,7 @@ const CustomBylineModal = ( {
 					title="Edit byline"
 					onRequestClose={ closeModal }
 				>
-					<div
-						className="newspack-byline-textarea"
-						contentEditable="true"
-						onBlur={ updateCursorPos }
-						onInput={ ( { currentTarget } ) =>
-							updateBylineMeta( currentTarget )
-						}
-						ref={ onMount }
-					/>
+					{ textArea }
 					<Tokens
 						tokens={ tokens }
 						tokensInUse={ tokensInUse }
@@ -265,6 +258,9 @@ const BylinesSettingsPanel = () => {
 		!! getEditedPostAttribute( 'meta' )[ newspackBylines.metaKeyActive ]
 	);
 
+	/** Toggle if custom byline modal is open */
+	const [ isModalOpen, setModalOpen ] = useState( false );
+
 	const customByline =
 		getEditedPostAttribute( 'meta' )[ newspackBylines.metaKeyByline ];
 
@@ -295,9 +291,7 @@ const BylinesSettingsPanel = () => {
 			Number( span.dataset.token )
 		);
 
-		if ( JSON.stringify( inUse ) !== JSON.stringify( tokensInUse ) ) {
-			setTokensInUse( inUse );
-		}
+		setTokensInUse( inUse );
 	};
 
 	/**
@@ -321,8 +315,10 @@ const BylinesSettingsPanel = () => {
 	const insertToken = token => {
 		let { innerHTML } = editableRef.current;
 
+		const tokenId = `token-${ token.id }`;
+
 		// Compound new token element with token data.
-		const tokenElement = `<span id="token-${ token.id }" contenteditable="false" draggable="true" class="components-form-token-field__token token-inline-block author-token" data-token="${ token.id }">
+		const tokenElement = `<span id="${ tokenId }" contenteditable="false" draggable="true" class="components-form-token-field__token token-inline-block author-token" data-token="${ token.id }">
 				<span class="components-form-token-field__token-text">
 					${ token.name }
 				</span>
@@ -349,6 +345,20 @@ const BylinesSettingsPanel = () => {
 
 		// Update byline meta.
 		updateBylineMetaFromContentEditable( editableRef.current );
+
+		// Get index of the new token.
+		const tokenIndex = Array.from(
+			editableRef.current.querySelectorAll( 'span[data-token]' )
+		).indexOf( editableRef.current.querySelector( `#${ tokenId }` ) );
+
+		// Set cursor position and focus on the editable element.
+		const range = document.createRange();
+		range.setStart( editableRef.current, ( tokenIndex + 1 ) * 2 );
+		range.collapse( true );
+		const selection = editableRef.current.ownerDocument.getSelection();
+		selection.removeAllRanges();
+		selection.addRange( range );
+		editableRef.current.focus();
 	};
 
 	/**
@@ -474,21 +484,30 @@ const BylinesSettingsPanel = () => {
 	 *
 	 * @param {Element} HTML element being rendered.
 	 */
-	const onMount = useCallback( element => {
-		if ( ! element ) {
-			return;
-		}
-
-		editableRef.current = element;
-		element.innerHTML = parseForEdit( customByline );
-		element.addEventListener( 'click', ( { target } ) => {
-			if ( target.classList.contains( 'token-inline-block__remove' ) ) {
-				target.closest( '.token-inline-block' ).remove();
-				updateBylineMetaFromContentEditable( element );
+	const onMount = useCallback(
+		element => {
+			if ( ! element || ! isModalOpen ) {
+				return;
 			}
-		} );
-		setTokensInUseFromContentEditable( element );
-	} );
+
+			editableRef.current = element;
+			element.innerHTML = parseForEdit( customByline );
+			element.addEventListener( 'blur', updateCursorPos );
+			element.addEventListener( 'input', () =>
+				updateBylineMetaFromContentEditable( element )
+			);
+			element.addEventListener( 'click', ( { target } ) => {
+				if (
+					target.classList.contains( 'token-inline-block__remove' )
+				) {
+					target.closest( '.token-inline-block' ).remove();
+					updateBylineMetaFromContentEditable( element );
+				}
+			} );
+			setTokensInUseFromContentEditable( element );
+		},
+		[ isModalOpen ]
+	);
 
 	/**
 	 * Save the current cursor position on blur.
@@ -512,6 +531,16 @@ const BylinesSettingsPanel = () => {
 
 		setCursorPos( tempDiv.innerHTML.length );
 	};
+
+	const textArea = useMemo( () => {
+		return (
+			<div
+				contentEditable
+				className="newspack-byline-textarea"
+				ref={ onMount }
+			/>
+		);
+	}, [ isModalOpen ] );
 
 	return (
 		<PluginDocumentSettingPanel
@@ -539,11 +568,11 @@ const BylinesSettingsPanel = () => {
 					/>
 					<CustomBylineModal
 						insertToken={ insertToken }
-						onMount={ onMount }
 						tokens={ tokens }
 						tokensInUse={ tokensInUse }
-						updateCursorPos={ updateCursorPos }
-						updateBylineMeta={ updateBylineMetaFromContentEditable }
+						textArea={ textArea }
+						isOpen={ isModalOpen }
+						setOpen={ setModalOpen }
 					/>
 				</>
 			) }
