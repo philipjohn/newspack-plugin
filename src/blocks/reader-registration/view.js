@@ -77,6 +77,17 @@ window.newspackRAS.push( function( readerActivation ) {
 						readerActivation.setReaderEmail( data.email );
 						// Set authenticated only if email is set, otherwise an error will be thrown.
 						readerActivation.setAuthenticated( data?.authenticated );
+
+						if ( data.authenticated && ! data.existing_user ) {
+							const activity = { email: data.email, registration_method: data?.metadata?.registration_method || 'registration-block' };
+							if ( data?.metadata?.newspack_popup_id ) {
+								activity.newspack_popup_id = data.metadata?.newspack_popup_id;
+							}
+							if ( data?.metadata?.gate_post_id ) {
+								activity.gate_post_id = data.metadata?.gate_post_id;
+							}
+							readerActivation.dispatchActivity( 'reader_registered', activity );
+						}
 					}
 				} else if ( messageNode ) {
 					messageElement.appendChild( messageNode );

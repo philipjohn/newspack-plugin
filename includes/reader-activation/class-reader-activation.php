@@ -135,6 +135,7 @@ final class Reader_Activation {
 				'authenticated_email'   => $authenticated_email,
 				'otp_auth_action'       => Magic_Link::OTP_AUTH_ACTION,
 				'otp_rate_interval'     => Magic_Link::RATE_INTERVAL,
+				'auth_action_result'    => Magic_Link::AUTH_ACTION_RESULT,
 				'account_url'           => function_exists( 'wc_get_account_endpoint_url' ) ? \wc_get_account_endpoint_url( 'dashboard' ) : '',
 				'is_ras_enabled'        => self::is_enabled(),
 			];
@@ -2079,6 +2080,15 @@ final class Reader_Activation {
 				if ( ! empty( $current_page_url ) ) {
 					$metadata['current_page_url'] = $current_page_url;
 				}
+
+				/**
+				 * Filters the metadata to be saved for a reader registered via the auth modal.
+				 *
+				 * @param array  $metadata Metadata.
+				 * @param string $email    Email address of the reader.
+				 */
+				$metadata = apply_filters( 'newspack_auth_form_metadata', $metadata, $email );
+
 				$user_id = self::register_reader( $email, '', true, $metadata );
 				if ( false === $user_id ) {
 					return self::send_auth_form_response(
