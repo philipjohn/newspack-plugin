@@ -154,7 +154,7 @@ class Corrections {
 		];
 		$args = array(
 			'labels'              => $labels,
-			'description'         => 'Post type used to store corrections and clarifications.',
+			'description'         => __( 'Post type used to store corrections and clarifications.', 'newspack-plugin' ),
 			'has_archive'         => true,
 			'public'              => false,
 			'publicly_queryable'  => true,
@@ -494,7 +494,7 @@ class Corrections {
 		}
 
 		\register_block_template(
-			'newspack//corrections-archive',
+			'newspack//archive-' . self::POST_TYPE,
 			[
 				'title'       => __( 'Corrections Archive', 'newspack-plugin' ),
 				'description' => __( 'A block template for displaying an archive of corrections.', 'newspack-plugin' ),
