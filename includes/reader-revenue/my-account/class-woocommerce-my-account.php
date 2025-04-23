@@ -1030,13 +1030,16 @@ class WooCommerce_My_Account {
 	 * @param string $email   New email.
 	 */
 	public static function maybe_sync_email_change_with_stripe( $user_id, $email ) {
-		$request = Stripe_Connection::update_customer_data(
+		$result = Stripe_Connection::update_customer_data(
 			$user_id,
 			[
 				'email' => $email,
 			]
 		);
-		if ( \is_wp_error( $request ) ) {
+		if ( false === $result ) {
+			Logger::log( 'Skipping Stripe email update: no Stripe customer found for user ' . $email );
+		}
+		if ( \is_wp_error( $result ) ) {
 			Logger::error( 'Error updating Stripe customer email: ' . $result->get_error_message() );
 		}
 	}
