@@ -3,29 +3,9 @@
 /**
  * Internal dependencies.
  */
+import { domReady } from '../utils';
+import './activity';
 import './style.scss';
-
-/**
- * Specify a function to execute when the DOM is fully loaded.
- *
- * @see https://github.com/WordPress/gutenberg/blob/trunk/packages/dom-ready/
- *
- * @param {Function} callback A function to execute after the DOM is ready.
- * @return {void}
- */
-function domReady( callback ) {
-	if ( typeof document === 'undefined' ) {
-		return;
-	}
-	if (
-		document.readyState === 'complete' || // DOMContentLoaded + Images/Styles/etc loaded, so we call directly.
-		document.readyState === 'interactive' // DOMContentLoaded fires at this point, so we call directly.
-	) {
-		return void callback();
-	}
-	// DOMContentLoaded has not fired yet, delay callback until then.
-	document.addEventListener( 'DOMContentLoaded', callback );
-}
 
 domReady( function () {
 	const cancelButton = document.querySelector( '.subscription_details .button.cancel' );
@@ -44,6 +24,15 @@ domReady( function () {
 			}
 		};
 		cancelButton.addEventListener( 'click', confirmCancel );
+	}
+
+	// Add "name" attribute to My Account forms for analytics purposes.
+	const url = new URL( window.location.href );
+	if ( url.pathname.includes( 'edit-address' ) ) {
+		const form = document.querySelector( '.woocommerce-MyAccount-content form' );
+		if ( form && ! form.name ) {
+			form.setAttribute( 'name', url.pathname.includes( 'billing' ) ? 'billing_address' : 'shipping_address' );
+		}
 	}
 
 	// Rate limit the add payment method form.
