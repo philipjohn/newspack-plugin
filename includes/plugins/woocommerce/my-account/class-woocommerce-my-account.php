@@ -1,22 +1,16 @@
 <?php
 /**
- * Connection with WooCommerce's features.
+ * Newspack customizations of WooCommerce's My Account features.
  *
  * @package Newspack
  */
 
 namespace Newspack;
 
-use Newspack\Reader_Activation;
-use Newspack\Reader_Activation\Sync\Metadata;
-use Newspack\Reader_Activation\ESP_Sync;
-use Newspack\Stripe_Connection;
-use Newspack\WooCommerce_Connection;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Connection with WooCommerce's "My Account" page.
+ * This class handles functional customizations. UI customizations are handled in My_Account_UI classes.
  */
 class WooCommerce_My_Account {
 	const RESET_PASSWORD_URL_PARAM     = 'reset-password';
@@ -58,7 +52,6 @@ class WooCommerce_My_Account {
 		// Reader Activation mods.
 		if ( Reader_Activation::is_enabled() ) {
 			\add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_scripts' ] );
-			\add_filter( 'wc_get_template', [ __CLASS__, 'wc_get_template' ], 10, 5 );
 			\add_action( 'template_redirect', [ __CLASS__, 'handle_password_reset_request' ] );
 			\add_action( 'template_redirect', [ __CLASS__, 'handle_delete_account_request' ] );
 			\add_action( 'template_redirect', [ __CLASS__, 'handle_delete_account' ] );
@@ -79,7 +72,26 @@ class WooCommerce_My_Account {
 			\add_filter( 'wc_memberships_my_memberships_column_names', [ __CLASS__, 'remove_next_bill_on' ], 21 );
 			\add_action( 'profile_update', [ __CLASS__, 'handle_admin_email_change_request' ], 10, 3 );
 			\add_action( self::SYNC_ESP_EMAIL_CHANGE_CRON_HOOK, [ __CLASS__, 'sync_email_change_with_esp' ], 10, 3 );
+
+			// Decide which My Account UI version to load.
+			if ( version_compare( self::get_version(), '1.0.0', '<' ) ) {
+				include_once __DIR__ . '/class-my-account-ui-v0.php';
+			} else {
+				include_once __DIR__ . '/class-my-account-ui-v1.php';
+			}
 		}
+	}
+
+	/**
+	 * Decide which version of the Newspack My Account UI to use.
+	 * 0.0.0 is the default version (core WooCommerce My Account).
+	 * 1.0.0 and above are Newspack's custom My Account UI.
+	 *
+	 * @return string The version number.
+	 */
+	public static function get_version() {
+		$version = defined( 'NEWSPACK_MY_ACCOUNT_VERSION' ) ? NEWSPACK_MY_ACCOUNT_VERSION : '0.0.0'; // Increment this version number to default to a newer My Account version.
+		return $version;
 	}
 
 	/**
@@ -95,21 +107,6 @@ class WooCommerce_My_Account {
 				'permission_callback' => '__return_true',
 			]
 		);
-	}
-
-	/**
-	 * REST API handler for rate limit check.
-	 */
-	public static function api_check_rate_limit() {
-		$is_rate_limited = WooCommerce_Connection::rate_limit_by_user( 'add_payment_method', __( 'Please wait a moment before trying to add a new payment method.', 'newspack-plugin' ), true );
-		$response        = [ 'success' => false ];
-		if ( ! \is_wp_error( $is_rate_limited ) && ! $is_rate_limited ) {
-			$response['success'] = true;
-		}
-		if ( \is_wp_error( $is_rate_limited ) ) {
-			$response['error'] = $is_rate_limited->get_error_message();
-		}
-		return new \WP_REST_Response( $response );
 	}
 
 	/**
@@ -264,14 +261,24 @@ class WooCommerce_My_Account {
 					'cart_switch_subscriptions_summary'    => self::get_cart_switch_subscriptions_summary(),
 				]
 			);
-			\wp_enqueue_style(
-				'my-account',
-				\Newspack\Newspack::plugin_url() . '/dist/my-account.css',
-				[],
-				NEWSPACK_PLUGIN_VERSION
-			);
 		}
 	}
+
+	/**
+	 * REST API handler for rate limit check.
+	 */
+	public static function api_check_rate_limit() {
+		$is_rate_limited = WooCommerce_Connection::rate_limit_by_user( 'add_payment_method', __( 'Please wait a moment before trying to add a new payment method.', 'newspack-plugin' ), true );
+		$response        = [ 'success' => false ];
+		if ( ! \is_wp_error( $is_rate_limited ) && ! $is_rate_limited ) {
+			$response['success'] = true;
+		}
+		if ( \is_wp_error( $is_rate_limited ) ) {
+			$response['error'] = $is_rate_limited->get_error_message();
+		}
+		return new \WP_REST_Response( $response );
+	}
+
 
 	/**
 	 * Filter "My Account" items.
@@ -280,6 +287,11 @@ class WooCommerce_My_Account {
 	 */
 	public static function my_account_menu_items( $items ) {
 		$default_disabled_items = [];
+
+		// Rename 'Account details' to 'Account settings'.
+		if ( isset( $items['edit-account'] ) ) {
+			$items['edit-account'] = __( 'Account settings', 'newspack-plugin' );
+		}
 
 		// Rename 'Logout' action to 'Log out', for grammatical reasons.
 		if ( isset( $items['customer-logout'] ) ) {
@@ -339,7 +351,7 @@ class WooCommerce_My_Account {
 				}
 			}
 
-			// Move "Account Details" and "S"ubscriptions" to the top of the menu.
+			// Move "Account Details" and "Subscriptions" to the top of the menu.
 			if ( isset( $items['subscriptions'] ) ) {
 				$items = [ 'subscriptions' => $items['subscriptions'] ] + $items;
 			}
@@ -737,29 +749,6 @@ class WooCommerce_My_Account {
 	}
 
 	/**
-	 * WC's page templates hijacking.
-	 *
-	 * @param string $template      Template path.
-	 * @param string $template_name Template name.
-	 */
-	public static function wc_get_template( $template, $template_name ) {
-		switch ( $template_name ) {
-			case 'myaccount/form-login.php':
-				if ( isset( $_GET[ self::AFTER_ACCOUNT_DELETION_PARAM ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					return dirname( NEWSPACK_PLUGIN_FILE ) . '/includes/reader-revenue/templates/myaccount-after-delete-account.php';
-				}
-				return $template;
-			case 'myaccount/form-edit-account.php':
-				if ( isset( $_GET[ self::DELETE_ACCOUNT_FORM ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					return dirname( NEWSPACK_PLUGIN_FILE ) . '/includes/reader-revenue/templates/myaccount-delete-account.php';
-				}
-				return dirname( NEWSPACK_PLUGIN_FILE ) . '/includes/reader-revenue/templates/myaccount-edit-account.php';
-			default:
-				return $template;
-		}
-	}
-
-	/**
 	 * Restrict account content for unverified readers.
 	 */
 	public static function restrict_account_content() {
@@ -772,7 +761,7 @@ class WooCommerce_My_Account {
 			\add_action(
 				'woocommerce_account_content',
 				function() {
-					include dirname( NEWSPACK_PLUGIN_FILE ) . '/includes/reader-revenue/templates/myaccount-verify.php';
+					include __DIR__ . '/templates/myaccount-verify.php';
 				}
 			);
 		}
@@ -793,7 +782,7 @@ class WooCommerce_My_Account {
 	}
 
 	/**
-	 * Modify redurect url to home after a reader logs out from My Account.
+	 * Modify redirect url to home after a reader logs out from My Account.
 	 *
 	 * @param string $redirect_to The redirect destination URL.
 	 *

@@ -23,6 +23,15 @@ const getSubscriptionIdFromHref = element => {
 };
 
 domReady( function () {
+	// Add "name" attribute to My Account forms for analytics purposes.
+	const url = new URL( window.location.href );
+	if ( url.pathname.includes( 'edit-address' ) ) {
+		const form = document.querySelector( '.woocommerce-MyAccount-content form' );
+		if ( form && ! form.name ) {
+			form.setAttribute( 'name', url.pathname.includes( 'billing' ) ? 'billing_address' : 'shipping_address' );
+		}
+	}
+
 	// Track when the user cancels a subscription.
 	registerElementActivity(
 		'.subscription_details .button.cancel',
