@@ -1,3 +1,10 @@
+## [6.6.1](https://github.com/Automattic/newspack-plugin/compare/v6.6.0...v6.6.1) (2025-05-15)
+
+
+### Bug Fixes
+
+* remove nonexistent filter use ([#3976](https://github.com/Automattic/newspack-plugin/issues/3976)) ([ace5f7a](https://github.com/Automattic/newspack-plugin/commit/ace5f7a711572665918e72420e8666d3d8a4a950))
+
 # [6.6.0](https://github.com/Automattic/newspack-plugin/compare/v6.5.1...v6.6.0) (2025-05-14)
 
 
