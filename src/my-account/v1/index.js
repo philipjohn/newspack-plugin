@@ -5,7 +5,8 @@
 /**
  * Internal dependencies.
  */
+import './style.scss';
 import './navigation';
 import './account-settings';
 import './subscriptions';
-import './style.scss';
+import './modal-checkout';
